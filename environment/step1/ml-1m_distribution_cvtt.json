@@ -1,0 +1,17 @@
+{
+  "experiment_name": "COMPARING_MODELS",
+  "multiprocessing": "starmap",
+  "n_jobs": 61,
+  "opt": "DISTRIBUTION",
+  "split_methodology": "CVTT",
+  "dataset": "ml-1m",
+  "distribution": [
+    "WPS"
+  ],
+  "distribution_class": [
+    "POP",
+    "GENRE"
+  ],
+  "fold": [1, 2, 3],
+  "trial": [1]
+}

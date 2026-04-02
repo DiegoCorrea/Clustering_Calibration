@@ -1,0 +1,14 @@
+{
+  "experiment_name": "COMPARING_MODELS",
+  "opt": "RECOMMENDER",
+  "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
+  "multiprocessing": "starmap",
+  "n_jobs": 21,
+  "checkpoint": "YES",
+  "dataset": ["food"],
+  "recommender": ["BM25"],
+  "fold": [1, 2, 3],
+  "trial": [1],
+  "list_size": 100,
+  "metric": "map"
+}

@@ -1,0 +1,6 @@
+{
+  "experiment_name": "COMPARING_MODELS",
+  "opt": "CHART",
+  "dataset": "ml-1m",
+  "split_methodology": "CVTT"
+}

@@ -1,0 +1,17 @@
+{
+  "experiment_name": "COMPARING_MODELS",
+  "dataset": "food",
+  "split_methodology": "CVTT",
+  "opt": "DISTRIBUTION",
+  "distribution": [
+    "WPS"
+  ],
+  "distribution_class": [
+    "POP",
+    "GENRE"
+  ],
+  "fold": [1, 2, 3],
+  "trial": [1],
+  "multiprocessing": "starmap",
+  "n_jobs": 63
+}
