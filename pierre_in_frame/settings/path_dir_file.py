@@ -86,6 +86,7 @@ class PathDirFile:
         :return: A string like 
         data/{experiment_name}/datasets/{dataset}/{split_methodology}/{filename}
         """
+        print(f"data/{experiment_name}/datasets/{dataset}/{split_methodology}/{filename}")
         save_in_dir = "/".join([
             PathDirFile.DATA_DIR, experiment_name, "datasets", dataset, split_methodology
         ])
@@ -237,7 +238,7 @@ class PathDirFile:
     @staticmethod
     def set_conformity_hyperparameter_file(
             opt: str, experiment_name: str, dataset: str, split_methodology: str,
-            cluster: str, distribution: str) -> str:
+            cluster: str, distribution: str, distribution_class: str) -> str:
         f"""
         Method to set the file path, which deal with the hyperparameter values founded in the Search Step.
 
@@ -249,11 +250,11 @@ class PathDirFile:
         :param cluster: A string that represents the name of the cluster algorithm.
 
         :return: A string like 
-        data/{experiment_name}/hyperparameters/{dataset}/{split_methodology}/{opt}/{distribution}/{cluster}.json.
+        data/{experiment_name}/hyperparameters/{dataset}/{split_methodology}/{opt}/{distribution_class}/{distribution}/{cluster}.json.
         """
         save_in_dir = "/".join([
             PathDirFile.DATA_DIR, experiment_name, "hyperparameters", dataset, split_methodology,
-            opt, distribution
+            opt, distribution_class, distribution
         ])
         if not os.path.exists(save_in_dir):
             os.makedirs(save_in_dir)
@@ -262,7 +263,7 @@ class PathDirFile:
     @staticmethod
     def get_conformity_hyperparameter_file(
             opt: str, experiment_name: str, dataset: str, split_methodology: str,
-            cluster: str, distribution: str) -> str:
+            cluster: str, distribution: str, distribution_class: str) -> str:
         f"""
         Method to get the file path, which deal with the hyperparameter values founded in the Search Step.
 
@@ -275,11 +276,11 @@ class PathDirFile:
 
         :return: A string like 
                
-        data/{experiment_name}/hyperparameters/{dataset}/{split_methodology}/{opt}/{distribution}/{cluster}.json.
+        data/{experiment_name}/hyperparameters/{dataset}/{split_methodology}/{opt}/{distribution_class}/{distribution}/{cluster}.json.
         """
         save_in_dir = "/".join([
             PathDirFile.DATA_DIR, experiment_name, "hyperparameters", dataset, split_methodology,
-            opt, distribution
+            opt, distribution_class, distribution
         ])
         return "/".join([save_in_dir, cluster + ".json"])
 

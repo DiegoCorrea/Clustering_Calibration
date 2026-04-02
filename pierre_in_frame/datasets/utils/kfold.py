@@ -40,11 +40,11 @@ class KFoldTrainValidationTest:
             slice_list.remove(validation_number)
             self.train_list[ix].append(
                 pd.concat(
-                    [pd.DataFrame(split_list[i]) for i in slice_list],
+                    [pd.DataFrame(split_list[i], columns=["index"] + self.transactions_df.columns.tolist()) for i in slice_list],
                 )
             )
-            self.valid_list[ix].append(pd.DataFrame(split_list[validation_number]))
-            self.test_list[ix].append(pd.DataFrame(split_list[ix]))
+            self.valid_list[ix].append(pd.DataFrame(split_list[validation_number], columns=["index"] + self.transactions_df.columns.tolist()))
+            self.test_list[ix].append(pd.DataFrame(split_list[ix], columns=["index"] + self.transactions_df.columns.tolist()))
 
     def compute_kfold(self) -> tuple:
         """

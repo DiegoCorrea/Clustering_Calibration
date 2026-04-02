@@ -32,7 +32,7 @@ class ManualConformityAlgorithmSearch:
     def __init__(
         self,
         experiment_name: str, split_methodology: str,
-        dataset_name: str, distribution_list: list,
+        dataset_name: str, distribution_list: list, distribution_class_list: str,
         n_jobs: int, fold: int, trial: int, n_inter: int
     ):
         self.dataset_name = dataset_name
@@ -45,6 +45,7 @@ class ManualConformityAlgorithmSearch:
         self.split_methodology = split_methodology
 
         self.distribution_list = distribution_list
+        self.distribution_class_list = distribution_class_list
 
         self.param_grid = ConformityParams.CLUSTER_PARAMS_GRID
         self.cluster_params = ConformityParams.CLUSTER_PARAMS
@@ -53,7 +54,7 @@ class ManualConformityAlgorithmSearch:
         self.neighbor_params = ConformityParams.NEIGHBOR_PARAMS_GRID
         self.outlier_params = ConformityParams.OUTLIEAR_PARAMS_GRID
 
-    def preparing_data(self, distribution):
+    def preparing_data(self, distribution, distribution_class):
         """
         Prepares the dataset for pierre search.
         """
@@ -63,7 +64,7 @@ class ManualConformityAlgorithmSearch:
                 users_distribution_list.append(SaveAndLoad.load_user_preference_distribution(
                     dataset=self.dataset_name, trial=trial, fold=fold,
                     distribution=distribution, experiment_name=self.experiment_name,
-                    split_methodology=self.split_methodology
+                    split_methodology=self.split_methodology, distribution_class=distribution_class
                 ))
         return users_distribution_list
 
@@ -210,25 +211,27 @@ class ManualConformityAlgorithmSearch:
         params_to_use = self.get_params_to_use(conformity_str=conformity_str)
 
         for distribution in self.distribution_list:
-            users_distribution_list = self.preparing_data(distribution=distribution)
-            # Performing manual gridsearch
-            payload = Parallel(n_jobs=self.n_jobs, verbose=10)(
-                delayed(ManualConformityAlgorithmSearch.search)(
-                    params=params, conformity_str=conformity_str,
-                    users_distribution_list=users_distribution_list
-                ) for params in params_to_use
-            )
+            for distribution_class in self.distribution_class_list:
+                users_distribution_list = self.preparing_data(distribution=distribution, distribution_class=distribution_class)
+                # Performing manual gridsearch
+                payload = Parallel(n_jobs=self.n_jobs, verbose=10)(
+                    delayed(ManualConformityAlgorithmSearch.search)(
+                        params=params, conformity_str=conformity_str,
+                        users_distribution_list=users_distribution_list
+                    ) for params in params_to_use
+                )
 
-            best_silhouette = 0
-            best_param = None
-            for params in payload:
-                if abs(params["silhouette"]) > abs(best_silhouette):
-                    best_silhouette = abs(params["silhouette"])
-                    best_param = params
+                best_silhouette = 0
+                best_param = None
+                for params in payload:
+                    if abs(params["silhouette"]) > abs(best_silhouette):
+                        best_silhouette = abs(params["silhouette"])
+                        best_param = params
 
-            # Saving the best
-            SaveAndLoad.save_hyperparameters_conformity(
-                best_params=best_param, dataset=self.dataset_name,
-                cluster=conformity_str, distribution=distribution,
-                experiment_name=self.experiment_name, split_methodology=self.split_methodology
-            )
+                # Saving the best
+                SaveAndLoad.save_hyperparameters_conformity(
+                    best_params=best_param, dataset=self.dataset_name,
+                    cluster=conformity_str, distribution=distribution,
+                    experiment_name=self.experiment_name, split_methodology=self.split_methodology,
+                    distribution_class=distribution_class
+                )

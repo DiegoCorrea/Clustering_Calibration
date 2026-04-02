@@ -1,4 +1,5 @@
 import os
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -34,6 +35,9 @@ class YahooMovies(Dataset):
         Class constructor. Firstly call the super constructor and after start personalized things.
         """
         super().__init__()
+        self.cut_value = 4
+        self.item_cut_value = 5
+        self.profile_len_cut_value = 50
 
     # ######################################### #
     # ############# Transactions ############## #
@@ -63,18 +67,58 @@ class YahooMovies(Dataset):
         raw_transactions[Label.ITEM_ID] = raw_transactions[Label.ITEM_ID].astype(str)
         self.items[Label.ITEM_ID] = self.items[Label.ITEM_ID].astype(str)
 
+        filtered_raw_transactions = raw_transactions[
+            raw_transactions[Label.ITEM_ID].isin(self.items[Label.ITEM_ID].tolist())]
+
         self.set_transactions(
             new_transactions=YahooMovies.cut_users(
-                raw_transactions[raw_transactions[Label.ITEM_ID].isin(self.items[Label.ITEM_ID].tolist())], 4))
+                transactions=filtered_raw_transactions, item_cut_value=self.cut_value,
+                profile_len_cut_value=self.profile_len_cut_value
+            )
+        )
+        self.set_transactions(
+            new_transactions=YahooMovies.cut_item(
+                transactions=self.transactions, item_cut_value=self.cut_value            )
+        )
+        self.set_transactions(
+            new_transactions=YahooMovies.cut_users(
+                transactions=self.transactions, item_cut_value=self.cut_value,
+                profile_len_cut_value=self.profile_len_cut_value
+            )
+        )
         self.set_items(
-            new_items=self.items[self.items[Label.ITEM_ID].isin(self.transactions[Label.ITEM_ID].unique().tolist())])
+            new_items=self.items[
+                self.items[Label.ITEM_ID].isin(self.transactions[Label.ITEM_ID].unique().tolist())
+            ]
+        )
 
         if Constants.NORMALIZED_SCORE:
-            self.transactions[Label.TRANSACTION_VALUE] = np.where(self.transactions[Label.TRANSACTION_VALUE] >= 4, 1, 0)
+            self.transactions[Label.TRANSACTION_VALUE] = np.where(
+                self.transactions[Label.TRANSACTION_VALUE] >= self.cut_value, 1, 0
+            )
 
-        self.transactions.to_csv(os.path.join(self.clean_dataset_dir, PathDirFile.TRANSACTIONS_FILE),
-                                 index=False)
-        self.items.to_csv(os.path.join(self.clean_dataset_dir, PathDirFile.ITEMS_FILE), index=False)
+        self.reset_indexes()
+
+        # Save the clean transactions as CSV.
+        count_user_trans = Counter(self.transactions[Label.USER_ID].tolist())
+        min_c = min(list(count_user_trans.values()))
+        max_c = max(list(count_user_trans.values()))
+        print(f"Maximum: {max_c}")
+        print(f"Minimum: {min_c}")
+        self.transactions = self.transactions.astype({
+            Label.USER_ID: 'int32',
+            Label.ITEM_ID: 'int32'
+        })
+        self.transactions.to_csv(
+            os.path.join(self.clean_dataset_dir, PathDirFile.TRANSACTIONS_FILE),
+            index=False,
+            mode='w+'
+        )
+        self.items.to_csv(
+            os.path.join(self.clean_dataset_dir, PathDirFile.ITEMS_FILE),
+            index=False,
+            mode='w+'
+        )
 
     # ######################################### #
     # ################# Items ################# #

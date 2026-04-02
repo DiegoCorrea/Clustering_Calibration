@@ -1,0 +1,37 @@
+{
+  "experiment_name": "CLUSTERING",
+  "opt": "CONFORMITY",
+  "multiprocessing": "starmap",
+  "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
+  "n_inter": 21,
+  "n_jobs": 10,
+  "n_threads": 1,
+  "n_cv": 5,
+  "dataset": ["ml-1m"],
+  "recommender": ["BPR", "ALS"],
+  "distribution": [
+    "CWS"
+  ],
+  "distribution_class": [
+    "GENRE"
+  ],
+  "cluster": [
+    "KMEANS",
+    "SPECTRAL",
+    "BISECTING",
+    "DBSCAN",
+    "OPTICS",
+    "BIRCH",
+    "FCM",
+    "AGGLO",
+    "IF",
+    "GAUSSIAN",
+    "BAYESIAN",
+    "LOF",
+    "OSVM",
+    "SGD",
+    "ENVELOPE"
+  ],
+  "fold": 5,
+  "trial": 1
+}

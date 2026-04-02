@@ -79,6 +79,7 @@ class PierreStep2(Step):
                 experiment_name=self.experimental_settings["experiment_name"],
                 split_methodology=self.experimental_settings["split_methodology"],
                 distribution_list=self.experimental_settings["distribution"],
+                distribution_class_list=self.experimental_settings["distribution_class"],
                 n_jobs=self.experimental_settings["n_jobs"],
                 fold=self.experimental_settings["fold"],
                 trial=self.experimental_settings["trial"],

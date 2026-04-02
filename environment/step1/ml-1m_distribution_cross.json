@@ -1,17 +1,16 @@
 {
-  "experiment_name": "COMPARING_MODELS",
+  "experiment_name": "CLUSTERING",
   "multiprocessing": "starmap",
-  "n_jobs": 63,
+  "n_jobs": 10,
   "opt": "DISTRIBUTION",
   "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
   "dataset": "ml-1m",
   "distribution": [
-    "WPS"
+    "CWS"
   ],
   "distribution_class": [
-    "POP",
     "GENRE"
   ],
-  "fold": [1, 2, 3],
+  "fold": [1, 2, 3, 4, 5],
   "trial": [1]
 }

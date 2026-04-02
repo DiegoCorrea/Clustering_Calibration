@@ -1,6 +1,7 @@
 import json
 
 from pandas import DataFrame, read_csv
+import pandas as pd
 
 from settings.labels import Label
 from settings.path_dir_file import PathDirFile
@@ -52,7 +53,7 @@ class SaveAndLoad:
             filename=PathDirFile.TRAIN_FILE
         )
         print(directory_name)
-        data = read_csv(directory_name)
+        data = pd.read_csv(directory_name)
         return data
 
     @staticmethod
@@ -63,7 +64,7 @@ class SaveAndLoad:
             filename=PathDirFile.VALIDATION_FILE
         )
         print(directory_name)
-        data = read_csv(directory_name)
+        data = read_csv(directory_name, engine='python')
         return data
 
     @staticmethod
@@ -74,7 +75,7 @@ class SaveAndLoad:
             filename=PathDirFile.TEST_FILE
         )
         print(directory_name)
-        data = read_csv(directory_name)
+        data = read_csv(directory_name, engine='python')
         return data
 
     @staticmethod
@@ -248,20 +249,21 @@ class SaveAndLoad:
     @staticmethod
     def save_hyperparameters_conformity(
             best_params: dict, experiment_name: str, dataset: str, split_methodology: str,
-            cluster: str, distribution: str):
+            cluster: str, distribution: str, distribution_class: str):
         """
         TODO: Docstring
         """
         with open(PathDirFile.set_conformity_hyperparameter_file(
                 opt=Label.CONFORMITY, dataset=dataset, cluster=cluster,
-                distribution=distribution,
+                distribution=distribution, distribution_class=distribution_class,
                 experiment_name=experiment_name, split_methodology=split_methodology
         ), 'w') as fp:
             json.dump(best_params, fp)
 
     @staticmethod
     def load_hyperparameters_conformity(
-            experiment_name: str, dataset: str, split_methodology: str, cluster: str, distribution: str
+            experiment_name: str, dataset: str, split_methodology: str, cluster: str, distribution: str,
+            distribution_class: str
     ):
         """
         TODO: Docstring
@@ -269,7 +271,8 @@ class SaveAndLoad:
         path_to_open = PathDirFile.get_conformity_hyperparameter_file(
             opt=Label.CONFORMITY, dataset=dataset,
             cluster=cluster, distribution=distribution,
-            experiment_name=experiment_name, split_methodology=split_methodology
+            experiment_name=experiment_name, split_methodology=split_methodology,
+            distribution_class=distribution_class
         )
         with open(path_to_open) as json_file:
             params = json.load(json_file)

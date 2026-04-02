@@ -2,6 +2,8 @@ import logging
 
 from fcmeans import FCM
 from pandas import DataFrame
+from scikit_pierre.distributions.accessible import distributions_funcs
+from scikit_pierre.distributions.compute_distribution import computer_users_distribution_pandas
 from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN, Birch, OPTICS, BisectingKMeans, SpectralClustering
 from sklearn.covariance import EllipticEnvelope
 from sklearn.ensemble import IsolationForest
@@ -31,11 +33,16 @@ class ConformityAlgorithms:
     """
 
     def __init__(self, dataset: str, fold: int, trial: int, recommender: str, cluster: str,
-                 distribution: str, tradeoff: str, fairness: str, relevance: str, weight: str, selector: str):
+                 distribution: str, tradeoff: str, fairness: str, relevance: str, weight: str, selector: str,
+                 split_methodology: str, distribution_class: str, experiment_name: str):
         """
         TODO
         """
         self.dataset = RegisteredDataset.load_dataset(dataset)
+        self.dataset.set_environment(
+            experiment_name=experiment_name,
+            split_methodology=split_methodology,
+        )
         self.fold_int = fold
         self.trial_int = trial
         self.recommender_str = recommender
@@ -46,6 +53,9 @@ class ConformityAlgorithms:
         self.relevance_str = relevance
         self.weight_str = weight
         self.selector_str = selector
+        self.split_methodology = split_methodology
+        self.distribution_class = distribution_class
+        self.experiment_name = experiment_name
 
         self.params = None
 
@@ -65,9 +75,11 @@ class ConformityAlgorithms:
         It prepares the algorithm instance.
         """
         params = SaveAndLoad.load_hyperparameters_conformity(
-            dataset=self.dataset.system_name, recommender=self.recommender_str,
-            cluster=self.conformity_str, distribution=self.distribution_str
-        )
+            dataset=self.dataset.system_name, cluster=self.conformity_str, distribution=self.distribution_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
+        )["params"]
         # Cluster Models
 
         # # K-Means Variations
@@ -182,10 +194,13 @@ class ConformityAlgorithms:
         """
         TODO
         """
-        self.distribution_instance = calibration_measures_funcs(measure=self.distribution_str)
+        # self.distribution_instance = calibration_measures_funcs(measure=self.distribution_str)
         self.users_pref_dist_df = SaveAndLoad.load_user_preference_distribution(
             dataset=self.dataset.system_name, trial=self.trial_int, fold=self.fold_int,
-            distribution=self.distribution_str
+            distribution=self.distribution_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
         )
         self.users_pref_dist_df.sort_index(inplace=True)
 
@@ -193,19 +208,29 @@ class ConformityAlgorithms:
         """
         TODO
         """
+        # self.dist_func = computer_users_distribution_pandas(distribution=self.distribution_str)
         self.users_candidate_items = SaveAndLoad.load_candidate_items(
             dataset=self.dataset.get_dataset_name(), fold=self.fold_int, trial=self.trial_int,
-            algorithm=self.recommender_str
+            algorithm=self.recommender_str,
+            split_methodology=self.split_methodology,
+            experiment_name=self.experiment_name
         )
-        self.users_cand_items_dist_df = pd.concat([
-            self.dist_func(
-                user_id=user_id,
-                user_pref_set=self.users_candidate_items[
-                    self.users_candidate_items['USER_ID'] == user_id
-                ].sort_values(by=Label.TRANSACTION_VALUE).head(Constants.RECOMMENDATION_LIST_SIZE),
-                item_classes_set=self.items_classes_set
-            ) for user_id in self.users_candidate_items['USER_ID'].unique().tolist()
-        ])
+        # self.users_cand_items_dist_df = pd.concat([
+        #     self.dist_func(
+        #         user_id=user_id,
+        #         user_pref_set=self.users_candidate_items[
+        #             self.users_candidate_items['USER_ID'] == user_id
+        #         ].sort_values(by=Label.TRANSACTION_VALUE).head(Constants.RECOMMENDATION_LIST_SIZE),
+        #         item_classes_set=self.items_classes_set
+        #     ) for user_id in self.users_candidate_items['USER_ID'].unique().tolist()
+        # ])
+        # print(self.items_classes_set.columns)
+        self.users_cand_items_dist_df = computer_users_distribution_pandas(
+            users_preference_set=self.users_candidate_items,
+            items_df=self.dataset.get_items(),
+            distribution=self.distribution_str
+        ).fillna(0)
+        # print(self.users_cand_items_dist_df.head())
         self.users_cand_items_dist_df.sort_index(inplace=True)
 
     def __load_users_recommendation_lists_distribution(self):
@@ -215,16 +240,25 @@ class ConformityAlgorithms:
         self.users_recommendation_lists = SaveAndLoad.load_recommendation_lists(
             dataset=self.dataset.get_dataset_name(), recommender=self.recommender_str, trial=self.trial_int, fold=self.fold_int,
             tradeoff=self.tradeoff_str, distribution=self.distribution_str, fairness=self.fairness_str,
-            relevance=self.relevance_str, tradeoff_weight=self.weight_str, select_item=self.selector_str
+            relevance=self.relevance_str, tradeoff_weight=self.weight_str, select_item=self.selector_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
 
         )
-        self.users_rec_lists_dist_df = pd.concat([
-            self.dist_func(
-                user_id=user_id,
-                user_pref_set=self.users_recommendation_lists[self.users_recommendation_lists['USER_ID'] == user_id],
-                item_classes_set=self.items_classes_set
-            ) for user_id in self.users_recommendation_lists['USER_ID'].unique().tolist()
-        ])
+        # self.users_rec_lists_dist_df = pd.concat([
+        #     self.dist_func(
+        #         user_id=user_id,
+        #         user_pref_set=self.users_recommendation_lists[self.users_recommendation_lists['USER_ID'] == user_id],
+        #         item_classes_set=self.items_classes_set
+        #     ) for user_id in self.users_recommendation_lists['USER_ID'].unique().tolist()
+        # ])
+        self.users_rec_lists_dist_df = computer_users_distribution_pandas(
+            users_preference_set=self.users_recommendation_lists,
+            items_df=self.dataset.get_items(),
+            distribution=self.distribution_str
+        ).fillna(0)
+        # self.users_rec_lists_dist_df.head()
         self.users_rec_lists_dist_df.sort_index(inplace=True)
 
     def prepare_experiment(self):
@@ -323,7 +357,10 @@ class ConformityAlgorithms:
             data=data, metric=Label.SILHOUETTE_SCORE, cluster=self.conformity_str, recommender=self.recommender_str,
             dataset=self.dataset.get_dataset_name(), trial=self.trial_int, fold=self.fold_int,
             distribution=self.distribution_str, fairness=self.fairness_str, relevance=self.relevance_str,
-            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str
+            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
         )
 
     def __calinski_harabasz(self):
@@ -351,7 +388,10 @@ class ConformityAlgorithms:
             data=data, metric=Label.CALINSKI_SCORE, cluster=self.conformity_str, recommender=self.recommender_str,
             dataset=self.dataset.get_dataset_name(), trial=self.trial_int, fold=self.fold_int,
             distribution=self.distribution_str, fairness=self.fairness_str, relevance=self.relevance_str,
-            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str
+            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
         )
 
     def __davies_bouldin(self):
@@ -379,7 +419,10 @@ class ConformityAlgorithms:
             data=data, metric=Label.DAVIES_SCORE, cluster=self.conformity_str, recommender=self.recommender_str,
             dataset=self.dataset.get_dataset_name(), trial=self.trial_int, fold=self.fold_int,
             distribution=self.distribution_str, fairness=self.fairness_str, relevance=self.relevance_str,
-            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str
+            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
         )
 
     def __group_jaccard_score(self):
@@ -401,7 +444,10 @@ class ConformityAlgorithms:
             data=data, metric=Label.JACCARD_SCORE, cluster=self.conformity_str, recommender=self.recommender_str,
             dataset=self.dataset.get_dataset_name(), trial=self.trial_int, fold=self.fold_int,
             distribution=self.distribution_str, fairness=self.fairness_str, relevance=self.relevance_str,
-            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str
+            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
         )
 
     def __label_groups(self):
@@ -420,7 +466,10 @@ class ConformityAlgorithms:
             data=data, metric=Label.LABEL_SCORE, cluster=self.conformity_str, recommender=self.recommender_str,
             dataset=self.dataset.get_dataset_name(), trial=self.trial_int, fold=self.fold_int,
             distribution=self.distribution_str, fairness=self.fairness_str, relevance=self.relevance_str,
-            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str
+            weight=self.weight_str, tradeoff=self.tradeoff_str, selector=self.selector_str,
+            split_methodology=self.split_methodology,
+            distribution_class=self.distribution_class,
+            experiment_name=self.experiment_name
         )
 
     def evaluation(self):

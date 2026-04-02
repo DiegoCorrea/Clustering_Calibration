@@ -2,7 +2,7 @@
   "experiment_name": "CLUSTERING",
   "opt": "SPLIT",
   "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
-  "dataset": "ml-1m",
+  "dataset": "yahoo-movies",
   "n_folds": 5,
   "n_trials": 1,
   "cut_value": 4,

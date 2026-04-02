@@ -5,7 +5,7 @@
   "multiprocessing": "starmap",
   "n_jobs": 10,
   "checkpoint": "YES",
-  "dataset": ["ml-1m"],
+  "dataset": ["yahoo-movies"],
   "recommender": ["BPR", "ALS"],
   "fold": [1, 2, 3, 4, 5],
   "trial": [1],

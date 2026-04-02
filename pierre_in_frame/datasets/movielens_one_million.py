@@ -42,7 +42,7 @@ class MovielensOneMillion(Dataset):
         super().__init__()
         self.cut_value = 4
         self.item_cut_value = 5
-        self.profile_len_cut_value = 100
+        self.profile_len_cut_value = 50
 
     # ######################################### #
     # ############# Transactions ############## #

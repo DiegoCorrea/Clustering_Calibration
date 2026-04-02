@@ -93,7 +93,7 @@ def starting_cluster(
         cluster: str, experiment_name: str, split_methodology: str, recommender: str, dataset: str, trial: int, fold: int,
         distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
         checkpoint: str, distribution_class: str
-):
+) -> None | str:
     """
     TODO
     """
@@ -124,13 +124,15 @@ def starting_cluster(
         cluster=cluster,
         recommender=recommender, dataset=dataset, trial=trial, fold=fold,
         distribution=distribution, fairness=fairness, relevance=relevance,
-        weight=weight, tradeoff=tradeoff, selector=selector
+        weight=weight, tradeoff=tradeoff, selector=selector,
+        distribution_class=distribution_class,
+        split_methodology=split_methodology, experiment_name=experiment_name
     )
     cluster_instance.prepare_experiment()
     cluster_instance.fit()
 
     cluster_instance.evaluation()
-
+    return None
 
 
 class PierreStep5(Step):

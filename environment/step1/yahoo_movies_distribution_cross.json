@@ -2,10 +2,15 @@
   "experiment_name": "CLUSTERING",
   "multiprocessing": "starmap",
   "n_jobs": 10,
-  "opt": "CLASS_DISTRIBUTION",
+  "opt": "DISTRIBUTION",
   "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
-  "dataset": "ml-1m",
+  "dataset": "yahoo-movies",
+  "distribution": [
+    "CWS"
+  ],
   "distribution_class": [
     "GENRE"
-  ]
+  ],
+  "fold": [1, 2, 3, 4, 5],
+  "trial": [1]
 }
