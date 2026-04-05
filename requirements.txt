@@ -40,12 +40,10 @@ Pygments==2.20.0
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
 pytz==2024.2
-recommender_pierre @ file:///home/cordie/Code/Calibrated_Systems/Clustering_Calibration/recommender_pierre-0.0.1-cp311-cp311-linux_x86_64.whl#sha256=06db3b409286df22af3c2acd58743a3ac5da81192b09f175ea16fb1c1dca5233
 requests==2.33.1
 rich==14.3.3
 scikit-learn==1.8.0
 scikit-surprise==1.1.4
-scikit_pierre @ file:///home/cordie/Code/Calibrated_Systems/Clustering_Calibration/scikit_pierre-0.0.2-cp311-cp311-linux_x86_64.whl#sha256=c7dc32e9376c2e2148980bdd010c975472b2cc90a16170300d5d608a2dbcee86
 scipy==1.17.1
 six==1.17.0
 surprise==0.1
