@@ -9,7 +9,8 @@ class MetricComprises:
     @staticmethod
     def it_comprises_recommender_metric(
             dataset: str, recommender: str, metric: str, trial: list, fold: list,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
@@ -23,7 +24,9 @@ class MetricComprises:
                     dataset=dataset, trial=t, fold=f,
                     metric=metric, recommender=recommender,
                     distribution=distribution, fairness=fairness, relevance=relevance,
-                    weight=weight, tradeoff=tradeoff, selector=selector
+                    weight=weight, tradeoff=tradeoff, selector=selector,
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class
                 )
 
                 users_pref_list.append(mean(metric_df[metric].tolist()))
