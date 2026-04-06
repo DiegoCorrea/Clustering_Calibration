@@ -1,0 +1,14 @@
+{
+  "experiment_name": "CLUSTERING",
+  "opt": "RECOMMENDER",
+  "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
+  "multiprocessing": "starmap",
+  "n_jobs": 40,
+  "checkpoint": "YES",
+  "dataset": ["twitter_movies"],
+  "recommender": ["BPR", "ALS", "SVD"],
+  "fold": [1, 2, 3, 4, 5],
+  "trial": [1],
+  "list_size": 100,
+  "metric": "map"
+}

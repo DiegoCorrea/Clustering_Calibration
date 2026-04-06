@@ -8,7 +8,7 @@
   "n_threads": 1,
   "n_cv": 5,
   "dataset": ["ml-1m"],
-  "recommender": ["BPR", "ALS"],
+  "recommender": ["BPR", "ALS", "SVD"],
   "distribution": [
     "CWS"
   ],

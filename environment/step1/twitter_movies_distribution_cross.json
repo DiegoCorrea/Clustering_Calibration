@@ -1,0 +1,16 @@
+{
+  "experiment_name": "CLUSTERING",
+  "multiprocessing": "starmap",
+  "n_jobs": 10,
+  "opt": "DISTRIBUTION",
+  "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
+  "dataset": "twitter_movies",
+  "distribution": [
+    "CWS"
+  ],
+  "distribution_class": [
+    "GENRE"
+  ],
+  "fold": [1, 2, 3, 4, 5],
+  "trial": [1]
+}

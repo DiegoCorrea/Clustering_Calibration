@@ -146,6 +146,7 @@ class MovielensOneMillion(Dataset):
         # Clean the items without information and with the label indicating no genre in the item.
         raw_items_df.dropna(inplace=True)
         genre_clean_items = raw_items_df[raw_items_df[Label.GENRES] != '(no genres listed)'].copy()
+        genre_clean_items = genre_clean_items[genre_clean_items[Label.GENRES] != '']
 
         # Set the new data into the instance.
         self.set_items(new_items=genre_clean_items)

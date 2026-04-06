@@ -2,14 +2,14 @@
   "experiment_name": "CLUSTERING",
   "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
   "multiprocessing": "starmap",
-  "n_jobs": 10,
+  "n_jobs": 40,
   "checkpoint": "YES",
   "opt": "EVALUATION_METRICS",
   "metric": [
     "MACE",
     "MAP"
   ],
-  "recommender": ["BPR", "ALS"],
+  "recommender": ["BPR", "ALS", "SVD"],
   "dataset": ["yahoo-movies"],
   "fold": [1, 2, 3, 4, 5],
   "trial": [1],
