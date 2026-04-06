@@ -8,7 +8,7 @@
   "n_threads": 1,
   "n_cv": 5,
   "dataset": ["yahoo-movies"],
-  "recommender": ["BPR", "ALS"],
+  "recommender": ["BPR", "ALS", "SVD"],
   "fold": 5,
   "trial": 1
 }
