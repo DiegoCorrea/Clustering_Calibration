@@ -4,7 +4,7 @@
   "multiprocessing": "starmap",
   "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
   "n_inter": 21,
-  "n_jobs": 10,
+  "n_jobs": 40,
   "n_threads": 1,
   "n_cv": 5,
   "dataset": ["yahoo-movies"],
