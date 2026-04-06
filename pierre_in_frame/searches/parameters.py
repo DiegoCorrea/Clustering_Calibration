@@ -70,7 +70,7 @@ class ImplicitParams:
 
 
 class PierreParams:
-    size = 10
+    size = 50
     DAE_PARAMS = {
         "factors": randint(10, 150).rvs(size=size),
         "reg": uniform(0.0003, 0.1).rvs(size=size),
@@ -100,19 +100,33 @@ class PierreParams:
         "num_threads": [1]
     }
 
+def random_list() -> list:
+    li = [1, 2] + list((randint(3, 100).rvs(size=21)))
+    return li
+
+def random_list_no_one() -> list:
+    li = [2] + list((randint(3, 100).rvs(size=21)))
+    return li
 
 class ConformityParams:
+    size = 50
     # Cluster Params
-    CLUSTER_PARAMS = {
+    CLUSTER_PARAMS_RANDOM = {
+        'n_clusters':  random_list(),
+    }
+    # Cluster Params
+    CLUSTER_PARAMS_PRIME = {
         'n_clusters': [
             2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59,
             61, 67, 71, 73, 79, 83, 89, 97
         ],
     }
+    # Cluster Params
+    CLUSTER_PARAMS = CLUSTER_PARAMS_RANDOM
 
     # Cluster Grid Search
     CLUSTER_PARAMS_GRID = {
-        'min_samples': [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37],
+        'min_samples': random_list_no_one(),
         'eps': [
             0.05, 0.10, 0.15, 0.20, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55,
         ],
@@ -123,21 +137,24 @@ class ConformityParams:
     }
 
     COMPONENT_PARAMS_GRID = {
-        'n_components': [
+        'n_components_prime': [
             1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97
-        ]
+        ],
+        'n_components': random_list()
     }
 
     ESTIMATORS_PARAMS_GRID = {
-        'n_estimators': [
+        'n_estimators_prime': [
             1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97
-        ]
+        ],
+        'n_estimators': random_list()
     }
 
     NEIGHBOR_PARAMS_GRID = {
-        'n_neighbors': [
+        'n_neighbors_prime': [
             1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97
         ],
+        'n_neighbors': random_list(),
         'metric': [
             'cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan',
             'braycurtis', 'canberra', 'chebyshev', 'correlation', 'hamming'

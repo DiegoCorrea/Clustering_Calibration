@@ -89,7 +89,7 @@ class ImplicitGridSearch(BaseSearch):
         mrr_value = []
 
         for train, validation in zip(train_list, valid_list):
-            recommender = implicit.als.AlternatingLeastSquares(
+            recommender = implicit.cpu.als.AlternatingLeastSquares(
                 factors=factors, regularization=regularization, alpha=alpha, iterations=iterations,
                 random_state=random_state, num_threads=1
             )
@@ -135,7 +135,7 @@ class ImplicitGridSearch(BaseSearch):
         mrr_value = []
 
         for train, validation in zip(train_list, valid_list):
-            recommender = implicit.bpr.BayesianPersonalizedRanking(
+            recommender = implicit.cpu.bpr.BayesianPersonalizedRanking(
                 factors=factors, regularization=regularization, learning_rate=learning_rate,
                 iterations=iterations, random_state=random_state, num_threads=1
             )

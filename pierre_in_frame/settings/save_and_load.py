@@ -6,6 +6,18 @@ import pandas as pd
 from settings.labels import Label
 from settings.path_dir_file import PathDirFile
 from utils.utils import NpEncoder
+import numpy as np
+
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
 
 
 class SaveAndLoad:
@@ -258,7 +270,8 @@ class SaveAndLoad:
                 distribution=distribution, distribution_class=distribution_class,
                 experiment_name=experiment_name, split_methodology=split_methodology
         ), 'w') as fp:
-            json.dump(best_params, fp)
+            print(best_params)
+            json.dump(best_params, fp, cls=NpEncoder)
 
     @staticmethod
     def load_hyperparameters_conformity(
