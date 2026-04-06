@@ -51,7 +51,7 @@ class ImplicitRecommenderAlgorithm:
             dataset=self.dataset.system_name, algorithm=self.recommender_name
         )
         if self.recommender_name == Label.ALS:
-            self.recommender = implicit.als.AlternatingLeastSquares(
+            self.recommender = implicit.cpu.als.AlternatingLeastSquares(
                 factors=int(full_params["params"]["factors"]),
                 regularization=float(full_params["params"]["regularization"]),
                 alpha=float(full_params["params"]["alpha"]),
@@ -59,7 +59,7 @@ class ImplicitRecommenderAlgorithm:
                 random_state=int(full_params["params"]["random_state"]), num_threads=1
             )
         elif self.recommender_name == Label.BPR:
-            self.recommender = implicit.bpr.BayesianPersonalizedRanking(
+            self.recommender = implicit.cpu.bpr.BayesianPersonalizedRanking(
                 factors=full_params["params"]["factors"],
                 regularization=full_params["params"]["regularization"],
                 learning_rate=full_params["params"]["learning_rate"],
