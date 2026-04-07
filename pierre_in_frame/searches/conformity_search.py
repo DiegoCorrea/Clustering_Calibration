@@ -114,7 +114,7 @@ class ManualConformityAlgorithmSearch:
         elif conformity_str == Label.SGD:
             return SGDOneClassSVM(nu=params['nu'])
         elif conformity_str == Label.ENVELOPE:
-            return EllipticEnvelope(contamination=params['nu'], support_fraction=0.3)
+            return EllipticEnvelope(contamination=params['nu'], support_fraction=0.7)
 
         # Neighbor Models
         elif conformity_str == Label.LOF:
