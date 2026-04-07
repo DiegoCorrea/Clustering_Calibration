@@ -7,7 +7,7 @@
   "n_jobs": 40,
   "n_threads": 1,
   "n_cv": 5,
-  "dataset": ["yahoo-movies"],
+  "dataset": ["twitter_movies"],
   "recommender": ["BPR", "ALS", "SVD"],
   "fold": 5,
   "trial": 1
