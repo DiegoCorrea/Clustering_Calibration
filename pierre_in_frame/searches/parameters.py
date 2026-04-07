@@ -162,5 +162,5 @@ class ConformityParams:
     }
 
     OUTLIEAR_PARAMS_GRID = {
-        'nu': uniform(0.3, 1.0).rvs(size=size),
+        'nu': uniform(0.2, 0.99).rvs(size=size),
     }
