@@ -9,7 +9,7 @@
     "MACE",
     "MAP"
   ],
-  "recommender": ["BPR", "ALS"],
+  "recommender": ["BPR", "ALS", "SVD"],
   "dataset": ["yahoo-movies"],
   "fold": [1, 2, 3, 4, 5],
   "trial": [1],
