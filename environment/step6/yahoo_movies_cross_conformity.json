@@ -4,11 +4,7 @@
   "multiprocessing": "starmap",
   "n_jobs": 40,
   "checkpoint": "YES",
-  "opt": "EVALUATION_METRICS",
-  "metric": [
-    "MACE",
-    "MAP"
-  ],
+  "opt": "CONFORMITY",
   "recommender": ["BPR", "ALS", "SVD"],
   "dataset": ["yahoo-movies"],
   "fold": [1, 2, 3, 4, 5],

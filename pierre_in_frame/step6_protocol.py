@@ -78,7 +78,8 @@ class PierreStep6(Step):
     # Conformity parallelization
     def load_conformity_metric_jaccard(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
@@ -90,6 +91,8 @@ class PierreStep6(Step):
         for trial in range(1, Constants.N_TRIAL_VALUE + 1):
             for fold in range(1, Constants.K_FOLDS_VALUE + 1):
                 metric_df = SaveAndLoad.load_conformity_metric(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, trial=trial, fold=fold,
                     cluster=conformity, metric=Label.JACCARD_SCORE, recommender=recommender,
                     distribution=distribution, fairness=fairness, relevance=relevance,
@@ -116,13 +119,16 @@ class PierreStep6(Step):
 
     def conformity_jaccard_metric(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
         """
 
         jaccard_df = self.load_conformity_metric_jaccard(
+            experiment_name=experiment_name, split_methodology=split_methodology,
+            distribution_class=distribution_class,
             dataset=dataset, recommender=recommender, conformity=conformity,
             tradeoff=tradeoff, distribution=distribution, fairness=fairness,
             relevance=relevance, weight=weight, selector=selector
@@ -135,7 +141,8 @@ class PierreStep6(Step):
 
     def load_conformity_metric_silhouette(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
@@ -148,6 +155,8 @@ class PierreStep6(Step):
         for trial in range(1, Constants.N_TRIAL_VALUE + 1):
             for fold in range(1, Constants.K_FOLDS_VALUE + 1):
                 metric_df = SaveAndLoad.load_conformity_metric(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, trial=trial, fold=fold,
                     cluster=conformity, metric=Label.SILHOUETTE_SCORE, recommender=recommender,
                     distribution=distribution, fairness=fairness, relevance=relevance,
@@ -176,13 +185,16 @@ class PierreStep6(Step):
 
     def conformity_silhouette_metric(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
         """
 
         silhouette_df = self.load_conformity_metric_silhouette(
+            experiment_name=experiment_name, split_methodology=split_methodology,
+            distribution_class=distribution_class,
             dataset=dataset, recommender=recommender, conformity=conformity,
             tradeoff=tradeoff, distribution=distribution, fairness=fairness,
             relevance=relevance, weight=weight, selector=selector
@@ -195,7 +207,8 @@ class PierreStep6(Step):
 
     def load_conformity_metric_label(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
@@ -208,6 +221,8 @@ class PierreStep6(Step):
         for trial in range(1, Constants.N_TRIAL_VALUE + 1):
             for fold in range(1, Constants.K_FOLDS_VALUE + 1):
                 metric_df = SaveAndLoad.load_conformity_metric(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, trial=trial, fold=fold,
                     cluster=conformity, metric=Label.LABEL_SCORE, recommender=recommender,
                     distribution=distribution, fairness=fairness, relevance=relevance,
@@ -236,13 +251,16 @@ class PierreStep6(Step):
 
     def conformity_labels_metric(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
         """
 
         label_df = self.load_conformity_metric_label(
+            experiment_name=experiment_name, split_methodology=split_methodology,
+            distribution_class=distribution_class,
             dataset=dataset, recommender=recommender, conformity=conformity,
             tradeoff=tradeoff, distribution=distribution, fairness=fairness,
             relevance=relevance, weight=weight, selector=selector
@@ -255,7 +273,8 @@ class PierreStep6(Step):
 
     def load_conformity_metric_davies(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
@@ -268,6 +287,8 @@ class PierreStep6(Step):
         for trial in range(1, Constants.N_TRIAL_VALUE + 1):
             for fold in range(1, Constants.K_FOLDS_VALUE + 1):
                 metric_df = SaveAndLoad.load_conformity_metric(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, trial=trial, fold=fold,
                     cluster=conformity, metric=Label.DAVIES_SCORE, recommender=recommender,
                     distribution=distribution, fairness=fairness, relevance=relevance,
@@ -296,13 +317,16 @@ class PierreStep6(Step):
 
     def conformity_davies_metric(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
         """
 
         label_df = self.load_conformity_metric_davies(
+            experiment_name=experiment_name, split_methodology=split_methodology,
+            distribution_class=distribution_class,
             dataset=dataset, recommender=recommender, conformity=conformity,
             tradeoff=tradeoff, distribution=distribution, fairness=fairness,
             relevance=relevance, weight=weight, selector=selector
@@ -315,7 +339,8 @@ class PierreStep6(Step):
 
     def load_conformity_metric_calinski(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
@@ -328,6 +353,8 @@ class PierreStep6(Step):
         for trial in range(1, Constants.N_TRIAL_VALUE + 1):
             for fold in range(1, Constants.K_FOLDS_VALUE + 1):
                 metric_df = SaveAndLoad.load_conformity_metric(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, trial=trial, fold=fold,
                     cluster=conformity, metric=Label.CALINSKI_SCORE, recommender=recommender,
                     distribution=distribution, fairness=fairness, relevance=relevance,
@@ -356,13 +383,16 @@ class PierreStep6(Step):
 
     def conformity_calinski_metric(
             self, dataset: str, recommender: str, conformity: str,
-            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str
+            distribution: str, fairness: str, relevance: str, weight: str, tradeoff: str, selector: str,
+            experiment_name: str, split_methodology: str, distribution_class: str
     ) -> DataFrame:
         """
         TODO: Docstring
         """
 
         label_df = self.load_conformity_metric_calinski(
+            experiment_name=experiment_name, split_methodology=split_methodology,
+            distribution_class=distribution_class,
             dataset=dataset, recommender=recommender, conformity=conformity,
             tradeoff=tradeoff, distribution=distribution, fairness=fairness,
             relevance=relevance, weight=weight, selector=selector
@@ -379,19 +409,23 @@ class PierreStep6(Step):
         """
         for dataset in self.experimental_settings['dataset']:
             combination = [
-                self.experimental_settings['recommender'], self.experimental_settings['conformity'],
+                [self.experimental_settings['experiment_name']], [self.experimental_settings["split_methodology"]],
+                self.experimental_settings['recommender'],
                 self.experimental_settings['distribution'], self.experimental_settings['fairness'],
                 self.experimental_settings['relevance'], self.experimental_settings['weight'],
-                self.experimental_settings['tradeoff'], self.experimental_settings['selector']
+                self.experimental_settings['tradeoff'], self.experimental_settings['selector'],
+                self.experimental_settings["distribution_class"]
             ]
 
             # Jaccard
             jaccard_output = Parallel(n_jobs=Constants.N_CORES)(
                 delayed(self.conformity_jaccard_metric)(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, recommender=recommender, conformity=conformity,
                     distribution=distribution, fairness=fairness, relevance=relevance,
                     weight=weight, tradeoff=tradeoff, selector=selector
-                ) for recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector
+                ) for experiment_name, split_methodology, recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector, distribution_class
                 in list(itertools.product(*combination))
             )
             jaccard_results = pd.concat(jaccard_output)
@@ -403,10 +437,12 @@ class PierreStep6(Step):
             # Silhouette
             silhouette_output = Parallel(n_jobs=Constants.N_CORES)(
                 delayed(self.conformity_silhouette_metric)(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, recommender=recommender, conformity=conformity,
                     distribution=distribution, fairness=fairness, relevance=relevance,
                     weight=weight, tradeoff=tradeoff, selector=selector
-                ) for recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector
+                ) for experiment_name, split_methodology, recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector, distribution_class
                 in list(itertools.product(*combination))
             )
             silhouette_results = pd.concat(silhouette_output)
@@ -418,10 +454,12 @@ class PierreStep6(Step):
             # Labels
             label_output = Parallel(n_jobs=Constants.N_CORES)(
                 delayed(self.conformity_labels_metric)(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, recommender=recommender, conformity=conformity,
                     distribution=distribution, fairness=fairness, relevance=relevance,
                     weight=weight, tradeoff=tradeoff, selector=selector
-                ) for recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector
+                ) for experiment_name, split_methodology, recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector, distribution_class
                 in list(itertools.product(*combination))
             )
             label_results = pd.concat(label_output)
@@ -433,10 +471,12 @@ class PierreStep6(Step):
             # Davies
             davies_output = Parallel(n_jobs=Constants.N_CORES)(
                 delayed(self.conformity_davies_metric)(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, recommender=recommender, conformity=conformity,
                     distribution=distribution, fairness=fairness, relevance=relevance,
                     weight=weight, tradeoff=tradeoff, selector=selector
-                ) for recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector
+                ) for experiment_name, split_methodology, recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector, distribution_class
                 in list(itertools.product(*combination))
             )
             davies_results = pd.concat(davies_output)
@@ -448,10 +488,12 @@ class PierreStep6(Step):
             # Calinski
             calinski_output = Parallel(n_jobs=Constants.N_CORES)(
                 delayed(self.conformity_calinski_metric)(
+                    experiment_name=experiment_name, split_methodology=split_methodology,
+                    distribution_class=distribution_class,
                     dataset=dataset, recommender=recommender, conformity=conformity,
                     distribution=distribution, fairness=fairness, relevance=relevance,
                     weight=weight, tradeoff=tradeoff, selector=selector
-                ) for recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector
+                ) for experiment_name, split_methodology, recommender, conformity, distribution, fairness, relevance, weight, tradeoff, selector, distribution_class
                 in list(itertools.product(*combination))
             )
             calinski_results = pd.concat(calinski_output)
