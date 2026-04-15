@@ -59,7 +59,7 @@ class ConformityGraphics:
 
     @staticmethod
     def weight_by_metric_line(
-            data: DataFrame, dataset_name: str, conformity_algos: list, y_label: str, metric_name: str
+            data: DataFrame, dataset_name: str, conformity_algos: list, y_label: str, metric_name: str, recommender: str
     ):
         """
         TODO
@@ -96,7 +96,7 @@ class ConformityGraphics:
         plt.xticks(rotation=30)
 
         # Pasta para salvar a figura
-        filename = "_".join([metric_name, Label.TRADEOFF_WEIGHT_LABEL, ".png"])
+        filename = "_".join([recommender, metric_name, Label.TRADEOFF_WEIGHT_LABEL, ".png"])
         file_dir = PathDirFile.set_graphics_file(dataset_name, filename)
         # Salvar figura no disco
         plt.savefig(
@@ -158,7 +158,7 @@ class ConformityGraphics:
         plt.close('all')
 
     @staticmethod
-    def weight_by_jaccard_line(data: DataFrame, dataset_name: str, conformity_algos: list, rule: str):
+    def weight_by_jaccard_line(data: DataFrame, dataset_name: str, conformity_algos: list, rule: str, recommender: str):
         """
         TODO
         """
@@ -187,7 +187,7 @@ class ConformityGraphics:
         plt.xticks(rotation=30)
 
         # Pasta para salvar a figura
-        filename = "_".join([Label.JACCARD_SCORE, rule, ".png"])
+        filename = "_".join([recommender, Label.JACCARD_SCORE, rule, ".png"])
         file_dir = PathDirFile.set_graphics_file(dataset_name, filename)
         # Salvar figura no disco
         plt.savefig(

@@ -74,43 +74,47 @@ class PierreStep7(Step):
             results = SaveAndLoad.load_compiled_metric(
                 dataset=dataset_name, metric=Label.SILHOUETTE_SCORE
             )
-            ConformityGraphics.weight_by_metric_line(
-                data=results, dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
-                y_label="Silhouette Value", metric_name=Label.SILHOUETTE_SCORE
-            )
-            ConformityGraphics.weight_by_metric_line(
-                data=results, dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
-                y_label="Silhouette Value", metric_name=Label.SILHOUETTE_SCORE
-            )
+            for recommender in self.experimental_settings['recommender']:
+                results_by_recommender = results[results['recommender'] == recommender].copy()
+                ConformityGraphics.weight_by_metric_line(
+                    data=results_by_recommender, dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
+                    y_label="Silhouette Value", metric_name=Label.SILHOUETTE_SCORE, recommender=recommender
+                )
 
             print("Davis Lines: Weight by Conformity Algorithms")
             results = SaveAndLoad.load_compiled_metric(
                 dataset=dataset_name, metric=Label.DAVIES_SCORE
             )
-            ConformityGraphics.weight_by_metric_line(
-                data=results, dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
-                y_label="Davis-Bouldin Value", metric_name=Label.DAVIES_SCORE
-            )
+            for recommender in self.experimental_settings['recommender']:
+                results_by_recommender = results[results['recommender'] == recommender].copy()
+                ConformityGraphics.weight_by_metric_line(
+                    data=results_by_recommender, dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
+                    y_label="Davis-Bouldin Value", metric_name=Label.DAVIES_SCORE, recommender=recommender
+                )
 
             print("Calinski-Harabasz Lines: Weight by Conformity Algorithms")
             results = SaveAndLoad.load_compiled_metric(
                 dataset=dataset_name, metric=Label.CALINSKI_SCORE
             )
-            ConformityGraphics.weight_by_metric_line(
-                data=results, dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
-                y_label="Calinski-Harabasz Value", metric_name=Label.CALINSKI_SCORE
-            )
+            for recommender in self.experimental_settings['recommender']:
+                results_by_recommender = results[results['recommender'] == recommender].copy()
+                ConformityGraphics.weight_by_metric_line(
+                    data=results_by_recommender, dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
+                    y_label="Calinski-Harabasz Value", metric_name=Label.CALINSKI_SCORE, recommender=recommender
+                )
 
             print("Jaccard Lines: Weight by Conformity Algorithms")
 
             jaccard_results = SaveAndLoad.load_compiled_metric(
                 dataset=dataset_name, metric=Label.JACCARD_SCORE
             )
-            ConformityGraphics.weight_by_jaccard_line(
-                data=jaccard_results[jaccard_results[Label.CONFORMITY_DIST_MEANING] == Label.USERS_REC_LISTS],
-                dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
-                rule=Label.USERS_REC_LISTS
-            )
+            for recommender in self.experimental_settings['recommender']:
+                results_by_recommender = results[results['recommender'] == recommender].copy()
+                ConformityGraphics.weight_by_jaccard_line(
+                    data=results_by_recommender[results_by_recommender[Label.CONFORMITY_DIST_MEANING] == Label.USERS_REC_LISTS],
+                    dataset_name=dataset_name, conformity_algos=Label.REGISTERED_UNSUPERVISED,
+                    rule=Label.USERS_REC_LISTS, recommender=recommender
+                )
 
     def conformity_analyses(self):
         for dataset_name in self.experimental_settings['dataset']:
