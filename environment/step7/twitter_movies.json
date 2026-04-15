@@ -1,14 +1,14 @@
 {
   "opt": "EVALUATION_METRICS",
   "view": "CHART",
-  "dataset": ["yahoo-movies"],
+  "dataset": ["twitter_movies"],
   "type": ["LINE", "HEAT_WELCH"],
   "goal": ["DISTRIBUTION_LABEL"],
   "metric": [
     "MAP",
     "MACE"
   ],
-  "recommender": ["BPR", "ALS", "SVD"],
+  "recommender": ["ALS", "BPR", "SVD"],
   "tradeoff": ["LIN"],
   "fairness": ["VICIS_EMANON2"],
   "relevance": ["NDCG"],

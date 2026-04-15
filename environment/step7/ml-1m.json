@@ -8,7 +8,7 @@
     "MAP",
     "MACE"
   ],
-  "recommender": ["ALS", "BPR"],
+  "recommender": ["ALS", "BPR", "SVD"],
   "tradeoff": ["LIN"],
   "fairness": ["VICIS_EMANON2"],
   "relevance": ["NDCG"],
