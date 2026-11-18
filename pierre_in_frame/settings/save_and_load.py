@@ -292,6 +292,34 @@ class SaveAndLoad:
 
         return params
 
+    @staticmethod
+    def save_conformity_search_trace(
+            data: DataFrame, experiment_name: str, dataset: str, split_methodology: str,
+            cluster: str, distribution: str, distribution_class: str):
+        """
+        It saves every configuration evaluated by the labeling model search.
+        """
+        path = PathDirFile.set_conformity_hyperparameter_file(
+            opt=Label.CONFORMITY, dataset=dataset, cluster=cluster,
+            distribution=distribution, distribution_class=distribution_class,
+            experiment_name=experiment_name, split_methodology=split_methodology
+        )
+        data.to_csv(path.replace(".json", "_search.csv"), index=False)
+
+    @staticmethod
+    def load_conformity_search_trace(
+            experiment_name: str, dataset: str, split_methodology: str,
+            cluster: str, distribution: str, distribution_class: str) -> DataFrame:
+        """
+        It loads every configuration evaluated by the labeling model search.
+        """
+        path = PathDirFile.get_conformity_hyperparameter_file(
+            opt=Label.CONFORMITY, dataset=dataset, cluster=cluster,
+            distribution=distribution, distribution_class=distribution_class,
+            experiment_name=experiment_name, split_methodology=split_methodology
+        )
+        return read_csv(path.replace(".json", "_search.csv"))
+
     # ########################################################################################### #
     # [STEP 3] Processing step methods - Candidate Items
     # ########################################################################################### #

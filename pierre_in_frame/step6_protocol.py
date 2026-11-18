@@ -1,12 +1,17 @@
 import itertools
 import logging
+import os
 from statistics import mean, mode
 
 import pandas as pd
 from joblib import Parallel, delayed
 from pandas import DataFrame
 
+from evaluations import stage_wise_statistics as sws
 from evaluations.metrics_comprises import MetricComprises
+from evaluations.stage_wise_evaluation import stage_wise_dir
+from evaluations.structure_interpretation import structure_interpretation, stage_dispersion
+from settings.path_dir_file import PathDirFile
 from settings.constants import Constants
 from settings.labels import Label
 from settings.save_and_load import SaveAndLoad
@@ -72,8 +77,136 @@ class PierreStep6(Step):
             self.conformity_parallelization()
         elif self.experimental_settings['opt'] == Label.EVALUATION_METRICS:
             self.recommender_metrics_parallelization()
+        elif self.experimental_settings['opt'] == Label.STAGEWISE:
+            self.stage_wise_compilation()
         else:
             print(f"Option {self.experimental_settings['opt']} is not registered!")
+
+    # Stage-wise protocol
+    def stage_wise_compilation(self):
+        """
+        It gathers the fold results of the stage-wise protocol (step 5, option STAGEWISE) of all datasets,
+        and computes the dispersion over the folds and the statistical tests.
+        The folds and trials come from the environment file (the legacy CONFORMITY compilation used
+        Constants.K_FOLDS_VALUE = 3 and ignored folds 4 and 5).
+        """
+        settings = self.experimental_settings
+        distribution = settings['distribution'][0]
+        distribution_class = settings['distribution_class'][0]
+        out_dir = "/".join([PathDirFile.RESULTS_DIR, "stagewise"])
+        os.makedirs(out_dir, exist_ok=True)
+
+        raw_list, calibration_list, selection_rows, scalability_list, trace_list = [], [], [], [], []
+        labels_by_fold = {}
+        missing = []
+        for dataset in settings['dataset']:
+            for model in settings['conformity']:
+                model_dir = stage_wise_dir(
+                    settings['experiment_name'], dataset, settings['split_methodology'], distribution_class,
+                    distribution, model
+                )
+                for trial in settings['trial']:
+                    for fold in settings['fold']:
+                        metric_file = os.path.join(model_dir, f"trial-{trial}_fold-{fold}.csv")
+                        labels_file = os.path.join(model_dir, f"trial-{trial}_fold-{fold}_labels.csv")
+                        if not os.path.exists(metric_file):
+                            missing.append(metric_file)
+                            continue
+                        raw_list.append(pd.read_csv(metric_file))
+                        labels_by_fold.setdefault((dataset, model), {})[fold] = pd.read_csv(labels_file)
+
+                selection = SaveAndLoad.load_hyperparameters_conformity(
+                    experiment_name=settings['experiment_name'], dataset=dataset,
+                    split_methodology=settings['split_methodology'], cluster=model,
+                    distribution=distribution, distribution_class=distribution_class
+                )
+                selection_rows.append({
+                    'DATASET': dataset, 'MODEL': model, 'PARAMS': selection['params'],
+                    'SEARCH_SILHOUETTE': selection.get('silhouette'),
+                    'SEARCH_SILHOUETTE_SD': selection.get('silhouette_std'),
+                    'N_EVALUATED': selection.get('n_evaluated'), 'N_ELIGIBLE': selection.get('n_eligible'),
+                    'SEARCH_TIME': selection.get('search_time'),
+                })
+                try:
+                    trace = SaveAndLoad.load_conformity_search_trace(
+                        experiment_name=settings['experiment_name'], dataset=dataset,
+                        split_methodology=settings['split_methodology'], cluster=model,
+                        distribution=distribution, distribution_class=distribution_class
+                    )
+                except FileNotFoundError:
+                    missing.append(f"search trace of {model} on {dataset}")
+                    continue
+                trace.insert(0, 'MODEL', model)
+                trace.insert(0, 'DATASET', dataset)
+                trace_list.append(trace)
+
+            calibration_dir = stage_wise_dir(
+                settings['experiment_name'], dataset, settings['split_methodology'], distribution_class,
+                distribution, "CALIBRATION_CHECK"
+            )
+            for recommender in settings['recommender']:
+                for trial in settings['trial']:
+                    for fold in settings['fold']:
+                        path = os.path.join(calibration_dir, f"{recommender}_trial-{trial}_fold-{fold}.csv")
+                        if os.path.exists(path):
+                            calibration_list.append(pd.read_csv(path))
+                        else:
+                            missing.append(path)
+
+            scalability_file = os.path.join(stage_wise_dir(
+                settings['experiment_name'], dataset, settings['split_methodology'], distribution_class,
+                distribution, "SCALABILITY"
+            ), "scalability.csv")
+            if os.path.exists(scalability_file):
+                scalability_list.append(pd.read_csv(scalability_file))
+
+        if missing:
+            print(f"WARNING: {len(missing)} result files are missing, e.g. {missing[:3]}")
+
+        raw = pd.concat(raw_list, ignore_index=True)
+        raw.to_csv(os.path.join(out_dir, "stagewise_raw.csv"), index=False)
+        sws.summarize(raw).to_csv(os.path.join(out_dir, "stagewise_summary.csv"), index=False)
+        sws.contrasts(raw).to_csv(os.path.join(out_dir, "stagewise_contrasts.csv"), index=False)
+        sws.flatness(raw).to_csv(os.path.join(out_dir, "stagewise_flatness.csv"), index=False)
+        ranks, tests = sws.model_ranking(
+            raw, stages=['CAND', 'C@0.0', 'C@0.1', 'C@1.0'], measures=['ARI', 'AMI', 'BCUBED_F1', 'SILHOUETTE']
+        )
+        ranks.to_csv(os.path.join(out_dir, "stagewise_model_ranks.csv"), index=False)
+        tests.to_csv(os.path.join(out_dir, "stagewise_model_friedman.csv"), index=False)
+        sws.reproducibility(labels_by_fold).to_csv(os.path.join(out_dir, "stagewise_reproducibility.csv"), index=False)
+        pd.DataFrame(selection_rows).to_csv(os.path.join(out_dir, "labeling_selection.csv"), index=False)
+        pd.concat(trace_list, ignore_index=True).to_csv(os.path.join(out_dir, "labeling_search_trace.csv"), index=False)
+        if calibration_list:
+            calibration = pd.concat(calibration_list, ignore_index=True)
+            calibration.to_csv(os.path.join(out_dir, "calibration_check_raw.csv"), index=False)
+            sws.calibration_summary(calibration).to_csv(
+                os.path.join(out_dir, "calibration_check_summary.csv"), index=False
+            )
+        if scalability_list:
+            pd.concat(scalability_list, ignore_index=True).to_csv(
+                os.path.join(out_dir, "scalability.csv"), index=False
+            )
+        interpretation = pd.concat([
+            structure_interpretation(
+                experiment_name=settings['experiment_name'], split_methodology=settings['split_methodology'],
+                dataset=dataset, trial=settings['trial'][0], folds=settings['fold'],
+                recommenders=settings['recommender'], weights=settings['weight'], distribution=distribution,
+                distribution_class=distribution_class, tradeoff=settings['tradeoff'][0],
+                fairness=settings['fairness'][0], relevance=settings['relevance'][0], selector=settings['selector'][0]
+            ) for dataset in settings['dataset']
+        ], ignore_index=True)
+        interpretation.to_csv(os.path.join(out_dir, "structure_interpretation.csv"), index=False)
+        dispersion = pd.concat([
+            stage_dispersion(
+                experiment_name=settings['experiment_name'], split_methodology=settings['split_methodology'],
+                dataset=dataset, trial=settings['trial'][0], folds=settings['fold'],
+                recommenders=settings['recommender'], weights=settings['weight'], distribution=distribution,
+                distribution_class=distribution_class, tradeoff=settings['tradeoff'][0],
+                fairness=settings['fairness'][0], relevance=settings['relevance'][0], selector=settings['selector'][0]
+            ) for dataset in settings['dataset']
+        ], ignore_index=True)
+        dispersion.to_csv(os.path.join(out_dir, "stage_dispersion.csv"), index=False)
+        print(f"Stage-wise results saved in {out_dir}")
 
     # Conformity parallelization
     def load_conformity_metric_jaccard(

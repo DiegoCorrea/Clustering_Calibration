@@ -48,6 +48,12 @@ class Label:
     CLASS_GENRE = "GENRES"
     CLASS_POPULARITY = "POPULARITY"
 
+    # Values of "distribution_class" in the environment files (and the distribution directory names).
+    # They differ from the item column names above ("GENRE" vs. "GENRES").
+    DISTRIBUTION_CLASS_GENRE = "GENRE"
+    DISTRIBUTION_CLASS_POPULARITY = "POP"
+    GENRE_DISTRIBUTION_CLASSES = [CLASS_GENRE, DISTRIBUTION_CLASS_GENRE]
+
     ########################################################
 
     JOBLIB = "joblib"
@@ -166,7 +172,12 @@ class Label:
     RECOMMENDER_METRIC = 'RECOMMENDER_METRIC'
 
     EVALUATION_VALUE = 'EVALUATION_VALUE'
-    METRIC_OPT = [CONFORMITY, EVALUATION_METRICS]
+    # Stage-wise structural evaluation protocol (replaces the CONFORMITY option, which fitted an
+    # independent model on every stage and compared raw label values).
+    STAGEWISE = 'STAGEWISE'
+    CALIBRATION_CHECK = 'CALIBRATION_CHECK'
+    SCALABILITY = 'SCALABILITY'
+    METRIC_OPT = [CONFORMITY, EVALUATION_METRICS, STAGEWISE, CALIBRATION_CHECK, SCALABILITY]
     # # Ranking Metrics
     MAP = 'MAP'
     MRR = 'MRR'

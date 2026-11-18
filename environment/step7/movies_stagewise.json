@@ -1,0 +1,46 @@
+{
+  "experiment_name": "CLUSTERING",
+  "opt": "STAGEWISE",
+  "view": "CHART",
+  "dataset": [
+    "yahoo-movies",
+    "ml-1m",
+    "twitter_movies"
+  ],
+  "recommender": [
+    "BPR",
+    "ALS",
+    "SVD"
+  ],
+  "conformity": [
+    "KMEANS",
+    "BISECTING",
+    "AGGLO",
+    "SPECTRAL",
+    "BIRCH",
+    "FCM",
+    "GAUSSIAN",
+    "BAYESIAN",
+    "DBSCAN",
+    "OPTICS",
+    "IF",
+    "LOF",
+    "OSVM",
+    "SGD",
+    "ENVELOPE"
+  ],
+  "weight": [
+    "C@0.0",
+    "C@0.1",
+    "C@0.2",
+    "C@0.3",
+    "C@0.4",
+    "C@0.5",
+    "C@0.6",
+    "C@0.7",
+    "C@0.8",
+    "C@0.9",
+    "C@1.0"
+  ],
+  "output_dir": "paper_revision"
+}

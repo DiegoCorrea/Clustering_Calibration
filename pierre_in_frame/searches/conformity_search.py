@@ -1,24 +1,15 @@
-import random
-
 import logging
+import random
+import time
 
-from fcmeans import FCM
+import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
-from numpy import mean
-from sklearn.covariance import EllipticEnvelope
-from sklearn.ensemble import IsolationForest
-from sklearn.cluster import (DBSCAN, OPTICS, Birch, AgglomerativeClustering, KMeans,
-                             SpectralClustering, BisectingKMeans)
-from sklearn.linear_model import SGDOneClassSVM
-from sklearn.mixture import GaussianMixture, BayesianGaussianMixture
-from sklearn.model_selection import ParameterGrid
-from sklearn.neighbors import LocalOutlierFactor
-from sklearn.svm import OneClassSVM
 
-from sklearn.metrics import silhouette_score
-
-from searches.parameters import ConformityParams
-from settings.labels import Label
+from evaluations.labeling_models import (
+    ReferenceStructure, parameter_grid, family_of, silhouette, group_size_descriptors,
+    DENSITY_FAMILY, MAX_NOISE_SHARE, RANDOM_STATE
+)
 from settings.save_and_load import SaveAndLoad
 
 logger = logging.getLogger(__name__)
@@ -26,7 +17,13 @@ logger = logging.getLogger(__name__)
 
 class ManualConformityAlgorithmSearch:
     """
-    Class used to lead with the Manual Search of Unsupervised Algorithms
+    Model selection of the labeling (unsupervised) algorithms on the users' preference distributions.
+
+    Each configuration is fitted on the preference distribution of every fold and scored with the
+    signed silhouette coefficient. The selected configuration maximizes the mean silhouette over the
+    folds; ties are broken in favor of fewer groups. Configurations with fewer than two groups in some
+    fold, or (density-based models) with more than MAX_NOISE_SHARE of noise users, are not eligible.
+    The whole search trace is saved next to the selected configuration.
     """
 
     def __init__(
@@ -47,161 +44,77 @@ class ManualConformityAlgorithmSearch:
         self.distribution_list = distribution_list
         self.distribution_class_list = distribution_class_list
 
-        self.param_grid = ConformityParams.CLUSTER_PARAMS_GRID
-        self.cluster_params = ConformityParams.CLUSTER_PARAMS
-        self.component_params = ConformityParams.COMPONENT_PARAMS_GRID
-        self.estimators_params = ConformityParams.ESTIMATORS_PARAMS_GRID
-        self.neighbor_params = ConformityParams.NEIGHBOR_PARAMS_GRID
-        self.outlier_params = ConformityParams.OUTLIEAR_PARAMS_GRID
-
-    def preparing_data(self, distribution, distribution_class):
+    def preparing_data(self, distribution, distribution_class) -> list:
         """
-        Prepares the dataset for pierre search.
+        It loads the preference distribution of every fold, with the genres in a fixed order.
         """
         users_distribution_list = []
         for trial in range(1, self.trial + 1):
             for fold in range(1, self.fold + 1):
-                users_distribution_list.append(SaveAndLoad.load_user_preference_distribution(
+                dist_df = SaveAndLoad.load_user_preference_distribution(
                     dataset=self.dataset_name, trial=trial, fold=fold,
                     distribution=distribution, experiment_name=self.experiment_name,
                     split_methodology=self.split_methodology, distribution_class=distribution_class
-                ))
+                )
+                dist_df = dist_df.reindex(columns=sorted(dist_df.columns)).fillna(0).sort_index()
+                users_distribution_list.append(dist_df.to_numpy(dtype=float))
         return users_distribution_list
 
     @staticmethod
-    def load_conformity_algorithm_instance(conformity_str, params):
+    def search(params: dict, conformity_str: str, users_distribution_list: list) -> dict:
         """
-        It prepares the algorithm instance.
-        """
-
-        # Cluster Models
-
-        # # K-Means Variations
-        if conformity_str == Label.KMEANS:
-            return KMeans(n_clusters=params['n_clusters'], init='k-means++', n_init="auto")
-        elif conformity_str == Label.FCM:
-            return FCM(n_clusters=params['n_clusters'])
-        elif conformity_str == Label.BISECTING:
-            return BisectingKMeans(n_clusters=params['n_clusters'], init='k-means++')
-        # # Hierarchical Variations
-        elif conformity_str == Label.AGGLOMERATIVE:
-            return AgglomerativeClustering(n_clusters=params['n_clusters'])
-        # # Spectral Variations
-        elif conformity_str == Label.SPECTRAL:
-            return SpectralClustering(n_clusters=params['n_clusters'])
-        # # Tree Variations
-        elif conformity_str == Label.BIRCH:
-            return Birch(n_clusters=params['n_clusters'])
-        # # Search Variations
-        elif conformity_str == Label.DBSCAN:
-            return DBSCAN(min_samples=params['min_samples'], eps=params['eps'], metric=params['metric'])
-        elif conformity_str == Label.OPTICS:
-            return OPTICS(min_samples=params['min_samples'], eps=params['eps'], metric=params['metric'])
-
-        # Mixture Models
-        elif conformity_str == Label.GAUSSIAN_MIXTURE:
-            return GaussianMixture(n_components=params['n_components'], init_params='k-means++')
-        elif conformity_str == Label.BAYESIAN_MIXTURE:
-            return BayesianGaussianMixture(n_components=params['n_components'], init_params='k-means++')
-
-        # Ensemble Models
-        elif conformity_str == Label.IF:
-            return IsolationForest(n_estimators=params['n_estimators'])
-
-        # Outlier Models
-        elif conformity_str == Label.OSVM:
-            return OneClassSVM(nu=params['nu'])
-        elif conformity_str == Label.SGD:
-            return SGDOneClassSVM(nu=params['nu'])
-        elif conformity_str == Label.ENVELOPE:
-            return EllipticEnvelope(contamination=params['nu'], support_fraction=0.7)
-
-        # Neighbor Models
-        elif conformity_str == Label.LOF:
-            return LocalOutlierFactor(n_neighbors=params['n_neighbors'], metric=params['metric'])
-
-    @staticmethod
-    def fit(conformity_str, users_pref_dist_df, users_preferences_instance):
-        """
-        It trains and find the clusters in the data.
-        """
-        # Train
-        if conformity_str != Label.FCM:
-            users_preferences_instance = users_preferences_instance.fit(
-                X=users_pref_dist_df
-            )
-        else:
-            users_preferences_instance.fit(
-                X=users_pref_dist_df.to_numpy()
-            )
-
-        if conformity_str == Label.KMEANS or conformity_str == Label.BISECTING or \
-                conformity_str == Label.GAUSSIAN_MIXTURE or conformity_str == Label.BAYESIAN_MIXTURE:
-            return users_preferences_instance.predict(
-                X=users_pref_dist_df
-            )
-        elif conformity_str == Label.AGGLOMERATIVE or conformity_str == Label.IF or \
-                conformity_str == Label.BIRCH or conformity_str == Label.OPTICS or \
-                conformity_str == Label.SPECTRAL or conformity_str == Label.DBSCAN or conformity_str == Label.LOF or \
-                conformity_str == Label.SGD or conformity_str == Label.OSVM or conformity_str == Label.ENVELOPE:
-            return users_preferences_instance.fit_predict(
-                X=users_pref_dist_df
-            )
-        elif conformity_str == Label.FCM:
-            return users_preferences_instance.predict(
-                X=users_pref_dist_df.to_numpy()
-            )
-
-    @staticmethod
-    def search(params, conformity_str, users_distribution_list):
-        """
-        It inits the search for the value.
+        It fits one configuration on every fold and returns its scores.
         """
         silhouette_list = []
-
+        n_groups_list = []
+        excluded_list = []
+        fit_time_list = []
+        error = ""
         for users_dist in users_distribution_list:
-            users_preferences_instance = ManualConformityAlgorithmSearch.load_conformity_algorithm_instance(
-                conformity_str=conformity_str, params=params
-            )
-            clusters = ManualConformityAlgorithmSearch.fit(
-                conformity_str=conformity_str, users_pref_dist_df=users_dist,
-                users_preferences_instance=users_preferences_instance
-            )
+            try:
+                structure = ReferenceStructure(model_name=conformity_str, params=params).fit(users_dist)
+            except Exception as e:  # e.g., undefined distances for a metric
+                error = f"{type(e).__name__}: {e}"
+                break
+            descriptors = group_size_descriptors(conformity_str, structure.fit_labels_)
+            silhouette_list.append(silhouette(conformity_str, users_dist, structure.fit_labels_))
+            n_groups_list.append(descriptors['n_groups'])
+            excluded_list.append(descriptors['excluded_share'])
+            fit_time_list.append(structure.fit_time_)
 
-            if len(set(clusters)) == 1:
-                silhouette_list.append(0)
-            else:
-                silhouette_list.append(abs(silhouette_score(users_dist, clusters)))
+        complete = len(silhouette_list) == len(users_distribution_list) and error == ""
+        eligible = complete and not np.isnan(silhouette_list).any()
+        if eligible and family_of(conformity_str) == DENSITY_FAMILY:
+            eligible = max(excluded_list) <= MAX_NOISE_SHARE
 
         return {
-            "silhouette": mean(silhouette_list) if len(silhouette_list) else 0,
-            "params": params
+            "params": params,
+            "silhouette": float(np.mean(silhouette_list)) if complete else np.nan,
+            "silhouette_std": float(np.std(silhouette_list, ddof=1)) if complete and len(silhouette_list) > 1 else np.nan,
+            "silhouette_per_fold": silhouette_list,
+            "n_groups": float(np.mean(n_groups_list)) if n_groups_list else np.nan,
+            "excluded_share": float(np.mean(excluded_list)) if excluded_list else np.nan,
+            "fit_time": float(np.mean(fit_time_list)) if fit_time_list else np.nan,
+            "eligible": bool(eligible),
+            "error": error,
         }
 
-    def get_params_to_use(self, conformity_str: str):
-
-        # Chosen the parameter structure
-        if conformity_str in Label.CLUSTERING_LABEL_ALGORITHMS:
-            selected_params_list = self.cluster_params
-        elif conformity_str in Label.MIXTURE_LABEL_ALGORITHMS:
-            selected_params_list = self.component_params
-        elif conformity_str in Label.ENSEMBLE_LABEL_ALGORITHMS:
-            selected_params_list = self.estimators_params
-        elif conformity_str in Label.NEIGHBOR_LABEL_ALGORITHMS:
-            selected_params_list = self.neighbor_params
-        elif conformity_str in Label.OUTLIEAR_LABEL_ALGORITHMS:
-            selected_params_list = self.outlier_params
-        else:
-            selected_params_list = self.param_grid
-
-        params_list = list(ParameterGrid(selected_params_list))
-
+    def get_params_to_use(self, conformity_str: str) -> list:
+        """
+        The partition and mixture grids are evaluated in full. Larger grids (density-based models)
+        are sampled with a fixed seed.
+        """
+        params_list = parameter_grid(conformity_str)
         if self.n_inter < len(params_list):
-            params_to_use = list(random.sample(params_list, self.n_inter))
-        else:
-            params_to_use = params_list
+            return random.Random(RANDOM_STATE).sample(params_list, self.n_inter)
+        return params_list
 
-        return params_to_use
+    @staticmethod
+    def select_best(payload: list):
+        eligible = [p for p in payload if p["eligible"]]
+        if not eligible:
+            return None
+        return sorted(eligible, key=lambda p: (-p["silhouette"], p["n_groups"]))[0]
 
     def run(self, conformity_str: str):
         """
@@ -212,26 +125,45 @@ class ManualConformityAlgorithmSearch:
 
         for distribution in self.distribution_list:
             for distribution_class in self.distribution_class_list:
-                users_distribution_list = self.preparing_data(distribution=distribution, distribution_class=distribution_class)
-                # Performing manual gridsearch
-                payload = Parallel(n_jobs=self.n_jobs, verbose=10)(
+                users_distribution_list = self.preparing_data(
+                    distribution=distribution, distribution_class=distribution_class
+                )
+                start = time.perf_counter()
+                payload = Parallel(n_jobs=self.n_jobs, verbose=0)(
                     delayed(ManualConformityAlgorithmSearch.search)(
                         params=params, conformity_str=conformity_str,
                         users_distribution_list=users_distribution_list
                     ) for params in params_to_use
                 )
+                search_time = time.perf_counter() - start
 
-                best_silhouette = 0
-                best_param = None
-                for params in payload:
-                    if abs(params["silhouette"]) > abs(best_silhouette):
-                        best_silhouette = abs(params["silhouette"])
-                        best_param = params
+                best_param = self.select_best(payload)
+                if best_param is None:
+                    # The model is reported as "no eligible configuration" and is not evaluated in step 5.
+                    print(f"No eligible configuration for {conformity_str} on {self.dataset_name}")
+                    best_param = {"params": None, "silhouette": np.nan, "eligible": False}
+                best_param = dict(best_param)
+                best_param["n_evaluated"] = len(payload)
+                best_param["n_eligible"] = int(sum(p["eligible"] for p in payload))
+                best_param["search_time"] = search_time
 
-                # Saving the best
                 SaveAndLoad.save_hyperparameters_conformity(
                     best_params=best_param, dataset=self.dataset_name,
                     cluster=conformity_str, distribution=distribution,
                     experiment_name=self.experiment_name, split_methodology=self.split_methodology,
                     distribution_class=distribution_class
                 )
+
+                trace = pd.DataFrame([
+                    {**{"param_" + k: v for k, v in p["params"].items()},
+                     **{k: v for k, v in p.items() if k not in ["params", "silhouette_per_fold"]}}
+                    for p in payload
+                ])
+                SaveAndLoad.save_conformity_search_trace(
+                    data=trace, dataset=self.dataset_name,
+                    cluster=conformity_str, distribution=distribution,
+                    experiment_name=self.experiment_name, split_methodology=self.split_methodology,
+                    distribution_class=distribution_class
+                )
+                print(f"{self.dataset_name} {conformity_str}: {best_param['params']} "
+                      f"silhouette={best_param['silhouette']:.4f} ({search_time:.0f}s)", flush=True)

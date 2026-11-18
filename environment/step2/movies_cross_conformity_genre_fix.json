@@ -1,0 +1,45 @@
+{
+  "experiment_name": "CLUSTERING",
+  "opt": "CONFORMITY",
+  "multiprocessing": "starmap",
+  "split_methodology": "CROSS_TRAIN_VALIDATION_TEST",
+  "n_inter": 50,
+  "n_jobs": 5,
+  "n_threads": 1,
+  "n_cv": 5,
+  "dataset": [
+    "yahoo-movies",
+    "ml-1m",
+    "twitter_movies"
+  ],
+  "recommender": [
+    "BPR",
+    "ALS",
+    "SVD"
+  ],
+  "distribution": [
+    "CWS"
+  ],
+  "distribution_class": [
+    "GENRE"
+  ],
+  "cluster": [
+    "KMEANS",
+    "SPECTRAL",
+    "BISECTING",
+    "DBSCAN",
+    "OPTICS",
+    "BIRCH",
+    "FCM",
+    "AGGLO",
+    "IF",
+    "GAUSSIAN",
+    "BAYESIAN",
+    "LOF",
+    "OSVM",
+    "SGD",
+    "ENVELOPE"
+  ],
+  "fold": 5,
+  "trial": 1
+}

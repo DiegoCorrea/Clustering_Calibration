@@ -241,7 +241,9 @@ class PierreStep1(Step):
         # Get the users' preferences set
         users_preference_set = dataset_instance.get_full_train_transactions(trial=trial, fold=fold)
 
-        if distribution_class == Label.CLASS_GENRE:
+        # The environment files use "GENRE"; comparing only with Label.CLASS_GENRE ("GENRES")
+        # silently computed popularity-group distributions for the genre experiments.
+        if distribution_class in Label.GENRE_DISTRIBUTION_CLASSES:
             data = computer_users_distribution_pandas(
                 users_preference_set=users_preference_set, items_df=dataset_instance.get_items(),
                 distribution=distribution

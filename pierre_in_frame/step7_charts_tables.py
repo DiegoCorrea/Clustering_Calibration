@@ -1,6 +1,11 @@
 import logging
+import os
+
+import pandas as pd
 
 from evaluations.hypothesis import welch
+from graphics import stage_wise_charts, stage_wise_tables
+from settings.path_dir_file import PathDirFile
 from graphics.conformity import ConformityGraphics
 from graphics.recommender import SingleRecommenderGraphics, WelchHypothesisTestGraphics
 # from evaluations.best_worst import best_and_worst_systems, best_and_worst_fairness_measure
@@ -53,7 +58,9 @@ class PierreStep7(Step):
         TODO: Docstring
         """
 
-        if self.experimental_settings['opt'] == Label.CONFORMITY and self.experimental_settings['view'] == Label.DATASET_CHART:
+        if self.experimental_settings['opt'] == Label.STAGEWISE:
+            self.stage_wise_outputs()
+        elif self.experimental_settings['opt'] == Label.CONFORMITY and self.experimental_settings['view'] == Label.DATASET_CHART:
             self.conformity_charts()
         elif self.experimental_settings['opt'] == Label.CONFORMITY and self.experimental_settings['view'] == Label.DATASET_ANALYZE:
             self.conformity_analyses()
@@ -63,6 +70,94 @@ class PierreStep7(Step):
             self.recommender()
         else:
             print(f"Option or View is not allowed to use yet! ... {self.experimental_settings['opt']} ... {self.experimental_settings['view']}")
+
+    def stage_wise_outputs(self):
+        """
+        Figures and LaTeX tables of the stage-wise protocol, from the files compiled by step 6.
+        """
+        settings = self.experimental_settings
+        source = os.path.join(PathDirFile.RESULTS_DIR, "stagewise")
+        target = os.path.join(PathDirFile.RESULTS_DIR, settings.get('output_dir', 'paper_revision'))
+        figures = os.path.join(target, "figures")
+        tables = os.path.join(target, "tables")
+        datasets = settings['dataset']
+        recommenders = settings['recommender']
+
+        def load(name):
+            path = os.path.join(source, name)
+            return pd.read_csv(path) if os.path.exists(path) else None
+
+        raw = load("stagewise_raw.csv")
+        summary = load("stagewise_summary.csv")
+        reproducibility = load("stagewise_reproducibility.csv")
+        selection = load("labeling_selection.csv")
+        families = {
+            family: [m for m in stage_wise_tables.MODEL_ORDER if (raw["MODEL"] == m).any()
+                     and raw.loc[raw["MODEL"] == m, "FAMILY"].iloc[0] == family]
+            for family in stage_wise_charts.FAMILY_ORDER
+        }
+
+        # Figures
+        stage_wise_charts.stage_lines_by_family(
+            raw, "ARI", "ARI with PREF groups", os.path.join(figures, "stage_ari_family.pdf"), datasets, recommenders,
+            reference_line=0.0
+        )
+        stage_wise_charts.stage_lines_by_family(
+            raw, "SILHOUETTE", "Silhouette", os.path.join(figures, "stage_silhouette_family.pdf"), datasets,
+            recommenders, reference_line=0.0
+        )
+        stage_wise_charts.stage_lines_by_family(
+            raw, "BCUBED_F1", "B-cubed F1", os.path.join(figures, "stage_bcubed_family.pdf"), datasets, recommenders
+        )
+        for dataset in datasets:
+            for measure, label in [("ARI", "ARI with PREF groups"), ("SILHOUETTE", "Silhouette")]:
+                stage_wise_charts.stage_lines_by_model(
+                    raw, measure, label, os.path.join(figures, f"stage_{measure.lower()}_models_{dataset}.pdf"),
+                    dataset, recommenders, families
+                )
+        stage_wise_charts.description_vs_stability(
+            summary, reproducibility, os.path.join(figures, "description_vs_stability.pdf"), datasets
+        )
+        stage_wise_charts.independent_vs_projected(raw, os.path.join(figures, "independent_label_jaccard.pdf"))
+        trace = load("labeling_search_trace.csv")
+        if trace is not None:
+            stage_wise_charts.search_trace(
+                trace, os.path.join(figures, "search_silhouette.pdf"), datasets,
+                families["PARTITION"] + families["MIXTURE"]
+            )
+        calibration = load("calibration_check_summary.csv")
+        if calibration is not None:
+            stage_wise_charts.calibration_check(
+                calibration, os.path.join(figures, "calibration_check.pdf"), datasets, recommenders
+            )
+        scalability = load("scalability.csv")
+        if scalability is not None:
+            stage_wise_charts.scalability(scalability, os.path.join(figures, "scalability.pdf"), families)
+
+        # Tables
+        stage_wise_tables.structure_table(raw, selection, reproducibility, datasets,
+                                          os.path.join(tables, "structure.tex"))
+        stage_wise_tables.stage_agreement_table(raw, datasets, os.path.join(tables, "stage_ari.tex"))
+        stage_wise_tables.family_stage_table(
+            raw, "SILHOUETTE", datasets, os.path.join(tables, "stage_silhouette_family.tex"),
+            "tab:stage_silhouette",
+            "Silhouette of every stage with the reference groups (mean over the models of each family and the "
+            "three recommenders $\\pm$ half-width of the 95\\% confidence interval over the five folds)."
+        )
+        stage_wise_tables.contrast_table(load("stagewise_contrasts.csv"), datasets, os.path.join(tables, "contrasts.tex"))
+        stage_wise_tables.flatness_table(load("stagewise_flatness.csv"), datasets, os.path.join(tables, "flatness.tex"))
+        stage_wise_tables.ranking_table(load("stagewise_model_ranks.csv"), load("stagewise_model_friedman.csv"),
+                                        os.path.join(tables, "ranking.tex"))
+        if calibration is not None:
+            stage_wise_tables.calibration_table(calibration, datasets, recommenders,
+                                                os.path.join(tables, "calibration_check.tex"))
+        if scalability is not None:
+            stage_wise_tables.scalability_table(scalability, os.path.join(tables, "scalability.tex"))
+        interpretation = load("structure_interpretation.csv")
+        if interpretation is not None:
+            stage_wise_tables.interpretation_table(interpretation, datasets, recommenders,
+                                                   os.path.join(tables, "interpretation.tex"))
+        print(f"Figures and tables saved in {target}")
 
     def conformity_charts(self):
         for dataset_name in self.experimental_settings['dataset']:
